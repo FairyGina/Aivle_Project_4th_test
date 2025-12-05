@@ -6,10 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="d58550a9-18de-408b-b566-9765c672b88a" name="변경" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/book/frondend/index.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/book/frondend/layout.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/book/frondend/userpage/create/page.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/book/frondend/userpage/view/page.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/book/frontend/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/book/frontend/layout.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/book/frontend/mainpage/page.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/book/frontend/userpage/create/page.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/book/frontend/userpage/view/page.js" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,7 +42,7 @@
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;JIHYUN&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;JIHYUN__test&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/User/Documents/Aivle_School_4th_Project&quot;,
@@ -68,7 +69,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1764893649557</updated>
-      <workItem from="1764893650853" duration="9965000" />
+      <workItem from="1764893650853" duration="10536000" />
     </task>
     <servers />
   </component>

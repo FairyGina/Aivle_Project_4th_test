@@ -11,4 +11,6 @@ public interface UserInfoRepository extends JpaRepository<UserInfo, Long> {
 
     Optional<UserInfo> findByEmailAndPassword(String email, String password);
 
+    // 회원가입 중복 확인용
+    Optional<UserInfo> findByEmail(String email);
 }

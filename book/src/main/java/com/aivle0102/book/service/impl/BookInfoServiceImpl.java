@@ -1,81 +1,82 @@
 package com.aivle0102.book.service.impl;
 
-import com.aivle0102.book.domain.Book;
-import com.aivle0102.book.repository.BookRepository;
-import com.aivle0102.book.service.BookService;
+import com.aivle0102.book.domain.BookInfo;
+import com.aivle0102.book.domain.UserInfo;
+import com.aivle0102.book.repository.BookInfoRepository;
+import com.aivle0102.book.repository.UserInfoRepository;
+import com.aivle0102.book.service.BookInfoService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class BookServiceImpl implements BookService {
+@RequiredArgsConstructor
+public class BookInfoServiceImpl implements BookInfoService {
 
-    private final BookRepository bookRepository;
+    public final BookInfoRepository bookInfoRepository;
+    public final UserInfoRepository userInfoRepository;
 
-    // 생성자 주입
-    public BookServiceImpl(BookRepository bookRepository) {
-        this.bookRepository = bookRepository;
-    }
-
-    // ===== 네가 담당한 3개 =====
 
     // 1) 도서 목록 조회
     @Override
-    public List<Book> getBookList() {
-        return bookRepository.findAll();
+    public List<BookInfo> getBookList() {
+        return bookInfoRepository.findAll();
     }
 
     // 2) 도서 상세 조회
     @Override
-    public Book getBookDetail(Long id) {
-        return bookRepository.findById(id)
+    public BookInfo getBookDetail(Long id) {
+        return bookInfoRepository.findById(id)
                 .orElseThrow(() ->
                         new IllegalArgumentException("해당 ID의 도서를 찾을 수 없습니다. id=" + id));
     }
 
     // 3) 도서 등록
     @Override
-    public Book insertBook(Book book) {
+    public BookInfo insertBook(BookInfo book) {
+//        UserInfo user = userInfoRepository.findById(userId)
+//                .orElseThrow(() -> new RuntimeException("User Not Found"));
+
         LocalDateTime now = LocalDateTime.now();
         book.setCreatedAt(now);
         book.setUpdatedAt(now);
-        return bookRepository.save(book);
+        return bookInfoRepository.save(book);
     }
-
-    // ===== 파트너 담당 (기본 구현 예시) =====
 
     // 4) 도서 수정
     @Override
-    public Book updateBook(Long id, Book update) {
-        Book book = bookRepository.findById(id)
+    public BookInfo updateBook(Long id, BookInfo update) {
+        BookInfo book = bookInfoRepository.findById(id)
                 .orElseThrow(() ->
                         new IllegalArgumentException("해당 ID의 도서를 찾을 수 없습니다. id=" + id));
 
         book.setTitle(update.getTitle());
+        book.setAuthor(update.getAuthor());
         book.setContent(update.getContent());
         book.setCoverImageUrl(update.getCoverImageUrl());
         book.setUpdatedAt(LocalDateTime.now());
 
-        return bookRepository.save(book);
+        return bookInfoRepository.save(book);
     }
 
     // 5) 도서 삭제
     @Override
     public void deleteBook(Long id) {
-        bookRepository.deleteById(id);
+        bookInfoRepository.deleteById(id);
     }
 
     // 6) AI 표지 이미지 URL 업데이트
     @Override
-    public Book updateCoverUrl(Long id, String coverImageUrl) {
-        Book book = bookRepository.findById(id)
+    public BookInfo updateCoverUrl(Long id, String coverImageUrl) {
+        BookInfo book = bookInfoRepository.findById(id)
                 .orElseThrow(() ->
                         new IllegalArgumentException("해당 ID의 도서를 찾을 수 없습니다. id=" + id));
 
         book.setCoverImageUrl(coverImageUrl);
         book.setUpdatedAt(LocalDateTime.now());
 
-        return bookRepository.save(book);
+        return bookInfoRepository.save(book);
     }
 }

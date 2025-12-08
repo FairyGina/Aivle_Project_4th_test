@@ -35,3 +35,12 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# Node.js dependencies
+node_modules/
+
+# Next.js build output
+.next/
+
+# JetBrains IDE (이미 있지만 정확한 형태로 유지)
+.idea/

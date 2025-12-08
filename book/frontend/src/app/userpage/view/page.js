@@ -1,61 +1,74 @@
 "use client";
 
 // useState 외에 필요한 컴포넌트들을 mui에서 import 합니다.
-import { useState } from "react";
-import { 
-    Box, Typography, Stack, CardMedia, Button, 
-    Dialog, DialogTitle, DialogContent, DialogActions, TextField 
+import { useState, useEffect } from "react";
+import {
+    Box, Typography, Stack, CardMedia, Button,
+    Dialog, DialogTitle, DialogContent, DialogActions, TextField,
+    CircularProgress
 } from "@mui/material";
 
-const mockMyWorks = [ //나중에 백엔드에서 user가 등록한 작품 목록 가져와야함. 현재는 임시 데이터
-    {
-        id: 1,
-        title: "그해 여름이야기",
-        author: "작가 A", // '저자' 필드 추가
-        createdAt: "2023-00-00", // '등록일' 필드 추가
-        content:
-            "이 사건은 깨끗한 물을 공급하는 시설을 더 필요하게 만든 사람이 나중에 쓸 돈을 이미 있는 깨끗한 물 공급 시설 짓는 비용으로 내야 하는지...",
-        coverImageUrl: "https://image.yes24.com/goods/123456?random=1",
-    },
-    {
-        id: 2,
-        title: "엄마가 보고 싶어",
-        author: "작가 B",
-        createdAt: "2023-00-00",
-        content:
-            "이 사건은 깨끗한 물을 공급하는 시설을 더 필요하게 만든 사람이 나중에 쓸 돈을 이미 있는 깨끗한 물 공급 시설 짓는 비용으로 내야 하는지...",
-        coverImageUrl: "https://image.yes24.com/goods/987654?random=1",
-    },
-];
-
 export default function MyPageView() {
-    const [works, setWorks] = useState(mockMyWorks);
-    
+    const [works, setWorks] = useState([]);
+    const [loading, setLoading] = useState(true);
+
     // --- 모달 관련 상태 추가 ---
     const [isModalOpen, setIsModalOpen] = useState(false); // 모달 열림/닫힘 상태
     const [editingWork, setEditingWork] = useState(null); // 현재 수정 중인 작품 데이터
 
-    // 삭제 처리 함수 (기존 코드)
+    // ⭐ 로그인 체크 및 데이터 로드
+    useEffect(() => {
+        const user = JSON.parse(localStorage.getItem("user"));
+
+        // 로그인하지 않은 경우 리디렉션
+        if (!user || !user.userId) {
+            alert("로그인 후 이용 가능합니다.");
+            window.location.href = "/login";
+            return;
+        }
+
+        // 도서 목록 가져오기
+        const fetchBooks = async () => {
+            try {
+                const response = await fetch("http://localhost:8080/book/list");
+                if (!response.ok) {
+                    throw new Error("도서 목록을 가져오는데 실패했습니다.");
+                }
+                const allBooks = await response.json();
+
+                // 현재 사용자의 도서만 필터링
+                const myBooks = allBooks.filter(book => book.user?.userId === user.userId);
+                setWorks(myBooks);
+            } catch (error) {
+                console.error("도서 목록 조회 오류:", error);
+                alert("도서 목록을 불러오는데 실패했습니다.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchBooks();
+    }, []);
+
+    // 삭제 처리 함수
     const handleDelete = async (idToDelete) => {
-        // ... (기존 삭제 로직은 그대로 유지) ...
         // 사용자에게 삭제 여부 재확인
-        if (!window.confirm(`'${works.find(w => w.id === idToDelete)?.title}' 작품을 정말 삭제하시겠습니까?`)) {
+        if (!window.confirm(`'${works.find(w => w.bookId === idToDelete)?.title}' 작품을 정말 삭제하시겠습니까?`)) {
             return; // 사용자가 '취소'를 누르면 함수 종료
         }
 
         try {
             // 1. 백엔드에 삭제 요청 
-            const response = await fetch(`/book/delete/${idToDelete}`, {
+            const response = await fetch(`http://localhost:8080/book/delete/${idToDelete}`, {
                 method: 'DELETE',
             });
 
             if (!response.ok) {
-                // 실제 백엔드 연동 시, 여기서 에러 처리를 해야 합니다.
                 throw new Error('작품 삭제에 실패했습니다.');
             }
 
             // 2. 백엔드 요청 성공 시, 프론트엔드 상태 업데이트
-            setWorks(currentWorks => currentWorks.filter(work => work.id !== idToDelete));
+            setWorks(currentWorks => currentWorks.filter(work => work.bookId !== idToDelete));
             alert("작품이 삭제되었습니다.");
 
         } catch (error) {
@@ -89,20 +102,20 @@ export default function MyPageView() {
 
         try {
             // 1. 백엔드에 수정 요청 (PUT /book/update/{bookId})
-            const response = await fetch(`/book/update/${editingWork.id}`, {
+            const response = await fetch(`http://localhost:8080/book/update/${editingWork.bookId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(editingWork),
             });
             if (!response.ok) throw new Error('작품 수정에 실패했습니다.');
-            
+
             // 2. 프론트엔드 상태 업데이트
-            setWorks(currentWorks => 
-                currentWorks.map(work => 
-                    work.id === editingWork.id ? editingWork : work
+            setWorks(currentWorks =>
+                currentWorks.map(work =>
+                    work.bookId === editingWork.bookId ? editingWork : work
                 )
             );
-            
+
             alert("변경사항이 저장되었습니다.");
             handleCloseModal(); // 모달 닫기
 
@@ -124,71 +137,82 @@ export default function MyPageView() {
                 내 작품 관리
             </Typography>
 
-            {/* 작품 리스트 */}
-            <Stack spacing={5} sx={{ px: 6 }}>
-                {works.map((item) => (
-                    <Box
-                        key={item.id}
-                        sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            gap: 4,
-                            p: 3,
-                            borderRadius: 2,
-                            backgroundColor: "#f7f4f2",
-                        }}
-                    >
-                        {/* 표지 이미지 */}
-                        <CardMedia
-                            component="img"
-                            image={item.coverImageUrl}
-                            alt={item.title}
+            {/* 로딩 상태 */}
+            {loading ? (
+                <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
+                    <CircularProgress />
+                </Box>
+            ) : works.length === 0 ? (
+                <Typography sx={{ textAlign: "center", color: "#888", py: 10 }}>
+                    등록된 작품이 없습니다.
+                </Typography>
+            ) : (
+                /* 작품 리스트 */
+                <Stack spacing={5} sx={{ px: 6 }}>
+                    {works.map((item) => (
+                        <Box
+                            key={item.bookId}
                             sx={{
-                                width: 140,
-                                height: 200,
+                                display: "flex",
+                                flexDirection: "row",
+                                gap: 4,
+                                p: 3,
                                 borderRadius: 2,
-                                objectFit: "cover",
+                                backgroundColor: "#f7f4f2",
                             }}
-                        />
-
-                        {/* 텍스트 + 버튼 */}
-                        <Box sx={{ flex: 1 }}>
-
-                            {/* 제목 + 버튼 (가로 정렬) */}
-                            <Box
+                        >
+                            {/* 표지 이미지 */}
+                            <CardMedia
+                                component="img"
+                                image={item.coverImageUrl}
+                                alt={item.title}
                                 sx={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                    mb: 1,
+                                    width: 140,
+                                    height: 200,
+                                    borderRadius: 2,
+                                    objectFit: "cover",
                                 }}
-                            >
-                                <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                                    {item.title}
-                                </Typography>
+                            />
 
-                                {/* 수정/삭제 버튼 */}
-                                <Box sx={{ display: "flex", gap: 2 }}>
-                                    {/* 수정 버튼에 handleOpenEditModal 연결 */}
-                                    <Button variant="text" size="small" sx={{ color: "#555" }} onClick={() => handleOpenEditModal(item)}>
-                                        수정
-                                    </Button>
-                                    <Typography>|</Typography>
-                                    <Button variant="text" size="small" sx={{ color: "#555" }} onClick={() => handleDelete(item.id)}>
-                                        삭제
-                                    </Button>
+                            {/* 텍스트 + 버튼 */}
+                            <Box sx={{ flex: 1 }}>
+
+                                {/* 제목 + 버튼 (가로 정렬) */}
+                                <Box
+                                    sx={{
+                                        display: "flex",
+                                        justifyContent: "space-between",
+                                        alignItems: "center",
+                                        mb: 1,
+                                    }}
+                                >
+                                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                                        {item.title}
+                                    </Typography>
+
+                                    {/* 수정/삭제 버튼 */}
+                                    <Box sx={{ display: "flex", gap: 2 }}>
+                                        {/* 수정 버튼에 handleOpenEditModal 연결 */}
+                                        <Button variant="text" size="small" sx={{ color: "#555" }} onClick={() => handleOpenEditModal(item)}>
+                                            수정
+                                        </Button>
+                                        <Typography>|</Typography>
+                                        <Button variant="text" size="small" sx={{ color: "#555" }} onClick={() => handleDelete(item.bookId)}>
+                                            삭제
+                                        </Button>
+                                    </Box>
                                 </Box>
-                            </Box>
 
-                            {/* 설명 */}
-                            <Typography sx={{ color: "#555", lineHeight: 1.6 }}>
-                                {item.content}
-                            </Typography>
+                                {/* 설명 */}
+                                <Typography sx={{ color: "#555", lineHeight: 1.6 }}>
+                                    {item.content}
+                                </Typography>
+                            </Box>
                         </Box>
-                    </Box>
-                ))}
-            </Stack>
-            
+                    ))}
+                </Stack>
+            )}
+
             {/* --- 수정 모달 (Dialog) 추가 --- */}
             {editingWork && (
                 <Dialog open={isModalOpen} onClose={handleCloseModal} fullWidth maxWidth="sm">
@@ -206,7 +230,7 @@ export default function MyPageView() {
                         <TextField
                             name="author"
                             label="저자"
-                            value={editingWork.author}
+                            value={editingWork.author || ""}
                             onChange={handleFormChange}
                             fullWidth
                             margin="normal"
@@ -214,7 +238,7 @@ export default function MyPageView() {
                         {/* 등록일 (수정 불가) */}
                         <TextField
                             label="등록일"
-                            value={editingWork.createdAt}
+                            value={editingWork.createdAt ? new Date(editingWork.createdAt).toLocaleDateString() : ""}
                             fullWidth
                             margin="normal"
                             InputProps={{ readOnly: true }}
@@ -223,16 +247,16 @@ export default function MyPageView() {
                         <TextField
                             name="coverImageUrl"
                             label="책 표지 URL"
-                            value={editingWork.coverImageUrl}
+                            value={editingWork.coverImageUrl || ""}
                             onChange={handleFormChange}
                             fullWidth
                             margin="normal"
                         />
-                         {/* 책 요약/줄거리 */}
+                        {/* 책 요약/줄거리 */}
                         <TextField
                             name="content"
                             label="책 요약 / 줄거리"
-                            value={editingWork.content}
+                            value={editingWork.content || ""}
                             onChange={handleFormChange}
                             fullWidth
                             multiline

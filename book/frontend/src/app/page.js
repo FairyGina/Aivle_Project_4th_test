@@ -7,7 +7,7 @@ import { Box, Typography, Stack, CardMedia, Pagination } from "@mui/material";
 export default function MainPage() {
     const [books, setBooks] = useState([]);        // 전체 작품 데이터
     const [page, setPage] = useState(1);           // 현재 페이지 (1부터 시작)
-    const itemsPerPage = 4;                        // 페이지당 5개
+    const itemsPerPage = 4;                        // 페이지당 4개
 
     // ---- 1) 백엔드에서 도서 목록 가져오기 ----
     useEffect(() => {
@@ -108,7 +108,6 @@ export default function MainPage() {
                 ))}
             </Stack>
 
-            {/* ---- 페이지네이션 ---- */}
             <Stack alignItems="center" sx={{ mt: 4 }}>
                 <Pagination
                     count={totalPages}

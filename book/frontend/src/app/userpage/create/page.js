@@ -1,9 +1,18 @@
 'use client';
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Grid, TextField, Typography, Button, MenuItem, Box, Card, CardMedia, FormControl, InputLabel, Select } from "@mui/material";
 
 export default function CreateWork() {
+
+    // 페이지 진입 시 로그인 체크
+    useEffect(() => {
+        const token = sessionStorage.getItem("token");
+        if (!token) {
+            alert("로그인 후 이용 가능합니다."); //alert 두번 뜨는 문제가 있으나 작동은 정상 작동 하는 듯
+            window.location.href = "/login";
+        }
+    }, []);
 
     const [form, setForm] = useState({
         title: "",
@@ -24,6 +33,9 @@ export default function CreateWork() {
     };
 
     const handleSubmit = async () => {
+        const token = sessionStorage.getItem("token");
+        const userId = sessionStorage.getItem("id");
+
         if (!form.title || !form.author || !form.content) {
             alert("제목과 저자명, 내용을 입력해야 합니다.");
             return;
@@ -31,9 +43,7 @@ export default function CreateWork() {
 
         let coverUrl = imageUrl;
         if (!imageUrl) {
-            const proceed = confirm(
-                "표지 이미지가 없습니다. 이미지 없이 작품을 등록할까요?"
-            );
+            const proceed = confirm("표지 이미지가 없습니다. 이미지 없이 작품을 등록할까요?");
             if (!proceed) return;
             coverUrl = null;
         }
@@ -41,8 +51,12 @@ export default function CreateWork() {
         try {
             const response = await fetch("http://localhost:8080/book/insert", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": token
+                },
                 body: JSON.stringify({
+                    user: { userId: Number(userId) },   // 유저 아이디!!!
                     title: form.title,
                     content: form.content,
                     author: form.author,
@@ -80,7 +94,7 @@ export default function CreateWork() {
                 container
                 spacing={6}
                 sx={{
-                    maxWidth: "1200px",   // 화면 가운데 고정 너비
+                    maxWidth: "1200px",
                     px: 2,
                 }}
             >

@@ -10,37 +10,7 @@ import {
 } from "@mui/material";
 
 // TODO: 로그인 구현 후 실제 accessToken으로 교체해야 합니다.
-const FAKE_ACCESS_TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"; 
-
-const MOCK_MY_WORKS = [ //나중에 백엔드에서 user가 등록한 작품 목록 가져와야함. 현재는 임시 데이터
-    {
-        id: 1,
-        title: "그해 여름이야기",
-        author: "작가 A", // '저자' 필드 추가
-        createdAt: "2023-01-01", // '등록일' 필드 추가
-        description:
-            "이 사건은 깨끗한 물을 공급하는 시설을 더 필요하게 만든 사람이 나중에 쓸 돈을 이미 있는 깨끗한 물 공급 시설 짓는 비용으로 내야 하는지...",
-        image: "https://image.yes24.com/goods/123456?random=1",
-    },
-    {
-        id: 2,
-        title: "엄마가 보고 싶어",
-        author: "작가 B",
-        createdAt: "2023-02-15", // Ensure date format matches YYYY-MM-DD
-        description:
-            "이 사건은 깨끗한 물을 공급하는 시설을 더 필요하게 만든 사람이 나중에 쓸 돈을 이미 있는 깨끗한 물 공급 시설 짓는 비용으로 내야 하는지...",
-        image: "https://image.yes24.com/goods/987654?random=1",
-    },
-    {
-        id: 3,
-        title: "엄마가 안보고 싶어",
-        author: "작가 C",
-        createdAt: "2025-11-15", // Ensure date format matches YYYY-MM-DD
-        description:
-            "안녕하세요",
-        image: "https://image.yes24.com/goods/987655?random=1",
-    },
-];
+const FAKE_ACCESS_TOKEN = "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 
 export default function MyPageView() {
     const router = useRouter();
@@ -54,26 +24,29 @@ export default function MyPageView() {
 
     // --- 작품 목록 불러오기 (GET /book/list) ---
     useEffect(() => {
-        const isLoggedIn = false; // 현재 테스트이므로, True로 변경, 실행 시 False로 변경 
+        const user = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+        const isLoggedIn = !!user;
 
         if (!isLoggedIn) {
+            // 여기서는 굳이 alert 안 띄우고 조용히 보내도 됨 (AppBar에서 이미 안내했으니까)
             if (!alertShown.current) {
+                // 필요하면 한 번만 안내
                 alert("로그인이 필요한 서비스입니다.");
                 alertShown.current = true;
             }
-            router.push('/login');
-            return; // 이후 코드(작품 목록 조회) 실행 중단
+            router.replace("/login");   // 뒤로가기 눌러도 안 돌아오도록 replace
+            return;
         }
         // --- 로그인 확인 끝 ---
 
         const fetchWorks = async () => {
             setLoading(true);
             try {
-                const response = await fetch('/api/book/list', {
-                    method: 'GET',
+                const response = await fetch("http://localhost:8080/book/list", {
+                    method: "GET",
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': FAKE_ACCESS_TOKEN, 
+                        "Content-Type": "application/json",
+                        // 'Authorization': FAKE_ACCESS_TOKEN,
                     },
                 });
 
@@ -90,26 +63,45 @@ export default function MyPageView() {
                 }
 
                 const result = await response.json();
-                if (result.status === 'success') {
-                    const fetchedWorks = result.data.map(item => ({
-                        id: item.bookId,
-                        title: item.title,
-                        author: item.author || "알 수 없음",
-                        createdAt: item.createdAt ? item.createdAt.substring(0, 10) : "알 수 없음",
-                        description: item.content,
-                        image: item.coverImageUrl || "https://via.placeholder.com/140x200?text=No+Image",
-                    }));
-                    setWorks(fetchedWorks);
+                console.log("📘 /book/list 응답:", result);
+
+                // 1) ApiResponse 형태: { status, data, message } 인지 확인
+                let list = null;
+                if (Array.isArray(result)) {
+                    // 혹시 배열로 바로 오는 경우
+                    list = result;
+                } else if (result && Array.isArray(result.data)) {
+                    list = result.data;
                 } else {
-                    throw new Error(result.message || '작품 목록 조회 실패');
+                    throw new Error("리스트 응답 형식이 올바르지 않습니다.");
                 }
+
+                // 2) null / undefined 항목 제거
+                const cleaned = list.filter((item) => item != null);
+
+                // 3) 여기서부터는 item 이 무조건 객체라고 가정
+                const fetchedWorks = cleaned.map((item) => ({
+                    // 백엔드에서 bookId 라고 오면 bookId, 혹시 id 라고 오면 id 둘 다 시도
+                    id: item.bookId ?? item.id,
+                    title: item.title ?? "제목 없음",
+                    author: item.author || "알 수 없음",
+                    createdAt: item.createdAt
+                        ? item.createdAt.substring(0, 10)
+                        : "알 수 없음",
+                    description: item.content ?? "",
+                    image:
+                        item.coverImageUrl ||
+                        "https://via.placeholder.com/140x200?text=No+Image",
+                }));
+
+                setWorks(fetchedWorks);
             } catch (error) {
                 console.error("작품 목록 불러오기 오류:", error);
                 if (!alertShown.current) {
-                    alert('작품 목록을 불러오지 못했습니다. 목업 데이터를 표시합니다.');
+                    alert("작품 목록을 불러오지 못했습니다.");
                     alertShown.current = true;
                 }
-                setWorks(MOCK_MY_WORKS);
+                setWorks([]);   // ✅ 더 이상 목업 안 씀
             } finally {
                 setLoading(false);
             }
@@ -120,18 +112,22 @@ export default function MyPageView() {
 
     // 삭제 처리 함수
     const handleDelete = async (idToDelete) => {
-        if (!window.confirm(`'${works.find(w => w.id === idToDelete)?.title}' 작품을 정말 삭제하시겠습니까?`)) {
+        const target = works.find((w) => w.id === idToDelete);
+        if (!window.confirm(`'${target?.title}' 작품을 정말 삭제하시겠습니까?`)) {
             return;
         }
 
         try {
-            const response = await fetch(`/api/book/delete?bookId=${idToDelete}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': FAKE_ACCESS_TOKEN,
-                },
-            });
+            const response = await fetch(
+                `http://localhost:8080/book/delete/${idToDelete}`,
+                {
+                    method: "DELETE",
+                    // 백엔드에서 아직 토큰 안 쓰면 헤더는 생략해도 됨
+                    headers: {
+                        // 'Authorization': FAKE_ACCESS_TOKEN,
+                    },
+                }
+            );
 
             if (!response.ok) {
                 const errorBody = await response.text();
@@ -145,15 +141,13 @@ export default function MyPageView() {
                 throw new Error(errorMessage);
             }
 
-            if (response.status === 204 || response.status === 200) {
-                setWorks(currentWorks => currentWorks.filter(work => work.id !== idToDelete));
-                alert("작품이 삭제되었습니다.");
-            } else {
-                 const result = await response.json();
-                 throw new Error(result.message || '작품 삭제에 실패했습니다.');
-            }
+            // 성공
+            setWorks((currentWorks) =>
+                currentWorks.filter((work) => work.id !== idToDelete)
+            );
+            alert("작품이 삭제되었습니다.");
         } catch (error) {
-            console.error("삭제 처리 중 오류:", error);
+            console.error("삭제 처리 중 오류:", error.message);
             alert(`삭제 처리 중 오류: ${error.message}`);
         }
     };
@@ -177,54 +171,62 @@ export default function MyPageView() {
     };
 
     // '저장' 버튼 클릭 시
+    // '저장' 버튼 클릭 시
     const handleSaveChanges = async () => {
         if (!editingWork) return;
 
         try {
-            const response = await fetch(`/api/book/update`, {
-                method: 'PUT',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': FAKE_ACCESS_TOKEN,
-                },
-                body: JSON.stringify({
-                    bookId: editingWork.id,
-                    title: editingWork.title,
-                    content: editingWork.description,
-                    author: editingWork.author,
-                    coverImageUrl: editingWork.image,
-                }),
-            });
+            const response = await fetch(
+                `http://localhost:8080/book/update/simple/${editingWork.id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        title: editingWork.title,
+                        content: editingWork.description,
+                        author: editingWork.author,
+                        coverImageUrl: editingWork.image,
+                    }),
+                }
+            );
 
             if (!response.ok) {
                 const errorBody = await response.text();
-                let errorMessage = `HTTP error! status: ${response.status}`;
-                try {
-                    const errorJson = JSON.parse(errorBody);
-                    errorMessage = errorJson.message || JSON.stringify(errorJson);
-                } catch (e) {
-                    errorMessage = errorBody || errorMessage;
-                }
-                throw new Error(errorMessage);
+                throw new Error(errorBody || `HTTP error! status: ${response.status}`);
             }
 
+            // 백엔드 응답(JSON) 확인 (원하면 사용)
             const result = await response.json();
-            if (result.status === 'success') {
-                setWorks(currentWorks => 
-                    currentWorks.map(work => 
-                        work.id === editingWork.id ? { ...editingWork, createdAt: work.createdAt } : work
-                    )
-                );
-                alert("변경사항이 저장되었습니다.");
-                handleCloseModal();
-            } else {
-                throw new Error(result.message || '작품 수정 실패');
-            }
+            console.log("✅ 수정 응답:", result);
+
+            // 화면에 들고 있는 works 상태를 직접 업데이트
+            setWorks((currentWorks) =>
+                currentWorks.map((work) =>
+                    work.id === editingWork.id
+                        ? {
+                            ...work,
+                            // editingWork 내용으로 갈아끼우기
+                            title: editingWork.title,
+                            author: editingWork.author,
+                            description: editingWork.description,
+                            image: editingWork.image,
+                            // createdAt 은 기존 값 유지
+                        }
+                        : work
+                )
+            );
+
+            alert("변경사항이 저장되었습니다.");
+            handleCloseModal(); // 모달 닫기
+
         } catch (error) {
             console.error("수정 중 오류:", error);
             alert(`수정 중 오류: ${error.message}`);
         }
     };
+
 
     if (loading) {
         return (

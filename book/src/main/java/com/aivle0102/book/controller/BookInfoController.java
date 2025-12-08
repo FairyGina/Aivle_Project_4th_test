@@ -1,9 +1,11 @@
 package com.aivle0102.book.controller;
 
 import com.aivle0102.book.domain.BookInfo;
+import com.aivle0102.book.dto.ApiResponse;
 import com.aivle0102.book.service.BookInfoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,41 +19,57 @@ public class BookInfoController {
 
     private final BookInfoService bookInfoService;
 
-
     // 1. 도서 목록
     @GetMapping("/list")
-    public List<BookInfo> getBookList() {
-        return bookInfoService.getBookList();
+    public ResponseEntity<ApiResponse<List<BookInfo>>> getBookList() {
+        List<BookInfo> list = bookInfoService.getBookList();
+        // 프론트에서 기대하는 형태: { status: "success", data: [...] }
+        return ResponseEntity.ok(ApiResponse.success(list));
     }
 
     // 2. 도서 상세
     @GetMapping("/detail/{id}")
-    public BookInfo getBookDetail(@PathVariable Long id) {
-        return bookInfoService.getBookDetail(id);
+    public ResponseEntity<ApiResponse<BookInfo>> getBookDetail(@PathVariable Long id) {
+        BookInfo detail = bookInfoService.getBookDetail(id);
+        return ResponseEntity.ok(ApiResponse.success(detail));
     }
 
     // 3. 도서 등록
     @PostMapping(value = "/insert", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public BookInfo insertBook(@RequestPart("book") BookInfo book, @RequestPart(value = "file", required = false) MultipartFile file, @RequestParam Long userId) throws IOException {
+    public ResponseEntity<ApiResponse<BookInfo>> insertBook(
+            @RequestPart("book") BookInfo book,
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestParam Long userId
+    ) throws IOException {
         BookInfo saved = bookInfoService.insertBook(book, userId, file);
-        return saved;
+        return ResponseEntity.ok(ApiResponse.success(saved));
     }
 
     // 4. 도서 수정
-    @PutMapping(value = "/update/{bookId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public BookInfo updateBook(@PathVariable long bookId, @RequestPart("book") BookInfo bookInfo, @RequestPart(value = "file", required = false) MultipartFile file, @RequestParam Long userId) throws IOException {
-        return bookInfoService.updateBook(bookId, bookInfo, userId, file);
+    @PutMapping("/update/simple/{bookId}")
+    public ResponseEntity<ApiResponse<BookInfo>> updateBookSimple(
+            @PathVariable long bookId,
+            @RequestBody BookInfo bookInfo
+    ) throws IOException {
+        // 필요하다면 userId는 BookInfo 안에서 꺼내거나, 임시로 1L 같은 값 사용
+        BookInfo updated = bookInfoService.updateBook(bookId, bookInfo, /*userId*/ 1L, null);
+        return ResponseEntity.ok(ApiResponse.success(updated));
     }
 
     // 5. 도서 삭제
     @DeleteMapping("/delete/{bookId}")
-    public void deleteBook(@PathVariable long bookId) {
+    public ResponseEntity<ApiResponse<Void>> deleteBook(@PathVariable long bookId) {
         bookInfoService.deleteBook(bookId);
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     // 6. AI 표지 이미지 URL 저장
     @PatchMapping("/createImg/{bookId}")
-    public BookInfo updateCoverUrl(@PathVariable Long bookId, @RequestBody BookInfo book){
-        return bookInfoService.updateCoverUrl(bookId, book.getCoverImageUrl());
+    public ResponseEntity<ApiResponse<BookInfo>> updateCoverUrl(
+            @PathVariable Long bookId,
+            @RequestBody BookInfo book
+    ){
+        BookInfo updated = bookInfoService.updateCoverUrl(bookId, book.getCoverImageUrl());
+        return ResponseEntity.ok(ApiResponse.success(updated));
     }
 }

@@ -46,14 +46,13 @@ public class BookInfoController {
     }
 
     // 4. 도서 수정
-    @PutMapping(value = "/update/{bookId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<BookInfo>> updateBook(
+    @PutMapping("/update/simple/{bookId}")
+    public ResponseEntity<ApiResponse<BookInfo>> updateBookSimple(
             @PathVariable long bookId,
-            @RequestPart("book") BookInfo bookInfo,
-            @RequestPart(value = "file", required = false) MultipartFile file,
-            @RequestParam Long userId
+            @RequestBody BookInfo bookInfo
     ) throws IOException {
-        BookInfo updated = bookInfoService.updateBook(bookId, bookInfo, userId, file);
+        // 필요하다면 userId는 BookInfo 안에서 꺼내거나, 임시로 1L 같은 값 사용
+        BookInfo updated = bookInfoService.updateBook(bookId, bookInfo, /*userId*/ 1L, null);
         return ResponseEntity.ok(ApiResponse.success(updated));
     }
 

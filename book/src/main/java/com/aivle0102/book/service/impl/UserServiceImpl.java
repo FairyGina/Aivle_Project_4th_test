@@ -83,4 +83,10 @@ public class UserServiceImpl implements UserService {
         user.setPassword(newPassword);
         userInfoRepository.save(user);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public UserInfo findById(Long userId) {
+        return userInfoRepository.findById(userId).orElse(null);
+    }
 }

@@ -9,10 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.aivle0102.book.dto.UserSignUpRequest;
 import com.aivle0102.book.service.UserService;
 
@@ -189,5 +186,66 @@ public class AuthController {
             body.put("message", "서버 내부 오류가 발생했습니다.");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
         }
+    }
+
+    // 현재 로그인한 사용자 정보 조회
+    @GetMapping("/me")
+    public ResponseEntity<?> me(HttpSession session) {
+
+        Object userIdObj = session.getAttribute("user");
+
+        if (userIdObj == null) {
+            // 세션에 user가 없는 상태 → 로그인 안 된 것
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                            "status", "error",
+                            "message", "로그인 정보가 없습니다."
+                    ));
+        }
+
+        Long userId;
+        try {
+            userId = (Long) userIdObj;
+        } catch (ClassCastException e) {
+            session.invalidate();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                            "status", "error",
+                            "message", "로그인 정보가 올바르지 않습니다."
+                    ));
+        }
+
+        UserInfo user = userService.findById(userId);
+        if (user == null) {
+            session.invalidate();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of(
+                            "status", "error",
+                            "message", "사용자를 찾을 수 없습니다."
+                    ));
+        }
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("userId", user.getUserId());
+        data.put("email", user.getEmail());
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "status", "success",
+                        "data", data
+                )
+        );
+    }
+
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpSession session) {
+        session.invalidate();
+        return ResponseEntity.ok(
+                Map.of(
+                        "status", "success",
+                        "message", "로그아웃 되었습니다."
+                )
+        );
     }
 }

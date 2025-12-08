@@ -30,13 +30,54 @@ export default function AppLayout({ children }) {
     const [isLogin, setIsLogin] = useState(false);
 
     useEffect(() => {
-        const user = localStorage.getItem("user");
-        setIsLogin(!!user);
+        const checkSession = async () => {
+            try {
+                const res = await fetch("http://localhost:8080/user/me", {
+                    method: "GET",
+                    credentials: "include",  // 세션 쿠키 포함
+                });
+
+                const result = await res.json().catch(() => ({}));
+                console.log("🧩 /user/me 응답:", result);
+
+                if (!res.ok || result.status !== "success" || !result.data) {
+                    // 세션 없음 → 프론트 로그인 정보도 삭제
+                    localStorage.removeItem("user");
+                    setIsLogin(false);
+                    return;
+                }
+
+                // 세션 유효 → 프론트에도 반영
+                const user = {
+                    userId: result.data.userId,
+                    email: result.data.email,
+                };
+                localStorage.setItem("user", JSON.stringify(user));
+                setIsLogin(true);
+            } catch (e) {
+                console.error("세션 확인 오류:", e);
+                setIsLogin(false);
+            }
+        };
+
+        // 브라우저에서만 호출되도록 보장 (SSR 방지용)
+        if (typeof window !== "undefined") {
+            checkSession();
+        }
     }, []);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
         const ok = window.confirm("정말 로그아웃 하시겠습니까?");
         if (!ok) return;
+
+        try {
+            await fetch("http://localhost:8080/user/logout", {
+                method: "POST",
+                credentials: "include",
+            });
+        } catch (e) {
+            console.error("로그아웃 요청 실패(무시 가능):", e);
+        }
 
         localStorage.removeItem("user");
         setIsLogin(false);

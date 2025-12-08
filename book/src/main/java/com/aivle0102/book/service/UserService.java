@@ -16,4 +16,7 @@ public interface UserService {
 
     // PASSWORD 변경
     void changePassword(Long userId, String currentPassword, String newPassword);
+
+    // userId로 조회
+    UserInfo findById(Long userId);
 }

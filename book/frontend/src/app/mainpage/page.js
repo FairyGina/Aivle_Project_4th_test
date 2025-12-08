@@ -58,8 +58,14 @@ export default function MainPage() {
                     id: item.bookId,
                     title: item.title,
                     description: item.content,
-                    image: item.coverImageUrl,
+                    image: item.coverImageUrl
+                        ? `http://localhost:8080${item.coverImageUrl}`  // 🔹 백엔드 도메인 붙이기
+                        : null,
                 }));
+
+
+
+
 
                 setBooks(converted);
             })

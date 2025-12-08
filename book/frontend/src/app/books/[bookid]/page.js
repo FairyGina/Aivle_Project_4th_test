@@ -1,21 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
     Box,
     Typography,
     CardMedia,
     CircularProgress,
-    Button,
-    Stack,
     Divider,
     Container,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    TextField,
+    Stack,
 } from "@mui/material";
 
 export default function BookDetailPage() {
@@ -23,15 +17,9 @@ export default function BookDetailPage() {
     const params = useParams();
     const bookid = params?.bookid; // /books/3 → "3"
 
-    const router = useRouter();
-
     // 2. 상태 관리
     const [book, setBook] = useState(null);
     const [loading, setLoading] = useState(true);
-
-    // 수정 모달용 상태
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [editingBook, setEditingBook] = useState(null);
 
     // 3. 백엔드에서 도서 상세 가져오기
     useEffect(() => {
@@ -72,7 +60,7 @@ export default function BookDetailPage() {
                     image:
                         data.coverImageUrl ||
                         "https://via.placeholder.com/200x300?text=No+Image",
-                    // 우선 content를 summary/plot 둘 다에 재사용 (필요하면 필드 분리)
+                    // content를 요약/줄거리 둘 다에 재사용
                     summary: data.content || "요약 정보가 없습니다.",
                     plot: data.content || "줄거리 정보가 없습니다.",
                 });
@@ -86,107 +74,6 @@ export default function BookDetailPage() {
 
         fetchDetail();
     }, [bookid]);
-
-    // ===========================
-    // 삭제 버튼 동작
-    // ===========================
-    const handleDelete = async () => {
-        if (!book) return;
-        if (!window.confirm(`'${book.title}' 작품을 정말 삭제하시겠습니까?`)) {
-            return;
-        }
-
-        try {
-            const res = await fetch(
-                `http://localhost:8080/book/delete/${book.id}`,
-                {
-                    method: "DELETE",
-                }
-            );
-
-            if (!res.ok) {
-                const text = await res.text();
-                throw new Error(text || `HTTP error! status: ${res.status}`);
-            }
-
-            alert("작품이 삭제되었습니다.");
-            router.push("/mainpage"); // 메인 페이지로 이동
-        } catch (err) {
-            console.error("상세페이지 삭제 중 오류:", err);
-            alert(`삭제 중 오류: ${err.message}`);
-        }
-    };
-
-    // ===========================
-    // 수정 버튼 동작 (모달 열기)
-    // ===========================
-    const handleOpenEditModal = () => {
-        if (!book) return;
-        setEditingBook({ ...book }); // 현재 book 내용을 복사
-        setIsModalOpen(true);
-    };
-
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setEditingBook(null);
-    };
-
-    const handleEditFieldChange = (e) => {
-        const { name, value } = e.target;
-        setEditingBook((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
-
-    // ===========================
-    // 수정 저장 (백엔드 호출)
-    // ===========================
-    const handleSaveChanges = async () => {
-        if (!editingBook) return;
-
-        try {
-            const res = await fetch(
-                `http://localhost:8080/book/update/simple/${editingBook.id}`,
-                {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        title: editingBook.title,
-                        content: editingBook.summary, // content 에 summary 사용
-                        author: editingBook.author,
-                        coverImageUrl: editingBook.image,
-                    }),
-                }
-            );
-
-            if (!res.ok) {
-                const text = await res.text();
-                throw new Error(text || `HTTP error! status: ${res.status}`);
-            }
-
-            const result = await res.json();
-            console.log("✅ 상세 수정 응답:", result);
-
-            // 화면에 보이는 book 상태도 업데이트
-            setBook((prev) => ({
-                ...prev,
-                title: editingBook.title,
-                author: editingBook.author,
-                image: editingBook.image,
-                summary: editingBook.summary,
-                plot: editingBook.summary, // 지금은 content 하나라 동일하게
-            }));
-
-            alert("변경사항이 저장되었습니다.");
-            handleCloseModal();
-        } catch (err) {
-            console.error("상세 수정 중 오류:", err);
-            alert(`수정 중 오류: ${err.message}`);
-        }
-    };
 
     // 4. 로딩 UI
     if (loading) {
@@ -208,7 +95,7 @@ export default function BookDetailPage() {
         );
     }
 
-    // 6. 메인 UI
+    // 6. 메인 UI (읽기 전용 상세 페이지)
     return (
         <Container maxWidth="lg" sx={{ mt: 5, mb: 5 }}>
             {/* 상단 헤더 영역 */}
@@ -238,26 +125,6 @@ export default function BookDetailPage() {
                         저자 : {book.author} &nbsp;/&nbsp; 등록일 : {book.regDate}
                     </Typography>
                 </Box>
-
-                {/* 수정/삭제 버튼 */}
-                <Stack direction="row" spacing={1}>
-                    <Button
-                        variant="contained"
-                        color="inherit"
-                        sx={{ backgroundColor: "#b0a9a9", color: "#fff" }}
-                        onClick={handleOpenEditModal}
-                    >
-                        수정
-                    </Button>
-                    <Button
-                        variant="contained"
-                        color="inherit"
-                        sx={{ backgroundColor: "#b0a9a9", color: "#fff" }}
-                        onClick={handleDelete}
-                    >
-                        삭제
-                    </Button>
-                </Stack>
             </Box>
 
             <Divider sx={{ mb: 4 }} />
@@ -321,62 +188,6 @@ export default function BookDetailPage() {
                     </Stack>
                 </Box>
             </Box>
-
-            {/* 수정 모달 */}
-            {editingBook && (
-                <Dialog
-                    open={isModalOpen}
-                    onClose={handleCloseModal}
-                    fullWidth
-                    maxWidth="sm"
-                >
-                    <DialogTitle sx={{ fontWeight: 700 }}>
-                        작품 정보 수정
-                    </DialogTitle>
-                    <DialogContent>
-                        <TextField
-                            label="작품 제목"
-                            name="title"
-                            value={editingBook.title}
-                            onChange={handleEditFieldChange}
-                            fullWidth
-                            margin="normal"
-                        />
-                        <TextField
-                            label="저자"
-                            name="author"
-                            value={editingBook.author}
-                            onChange={handleEditFieldChange}
-                            fullWidth
-                            margin="normal"
-                        />
-                        <TextField
-                            label="책 표지 URL"
-                            name="image"
-                            value={editingBook.image}
-                            onChange={handleEditFieldChange}
-                            fullWidth
-                            margin="normal"
-                        />
-                        <TextField
-                            label="책 요약 / 줄거리"
-                            name="summary"
-                            value={editingBook.summary}
-                            onChange={handleEditFieldChange}
-                            fullWidth
-                            multiline
-                            rows={4}
-                            margin="normal"
-                        />
-                    </DialogContent>
-                    <DialogActions sx={{ p: 3 }}>
-                        <Button onClick={handleCloseModal}>취소</Button>
-                        <Button onClick={handleSaveChanges} variant="contained">
-                            저장
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            )}
         </Container>
     );
 }

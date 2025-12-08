@@ -11,6 +11,9 @@ public interface BookInfoService {
     // 1) 도서 목록 (/book/list)
     List<BookInfo> getBookList();
 
+    // 1-2) 특정 사용자 도서 목록 (/book/list/my)
+    List<BookInfo> getBookListByUser(Long userId);
+
     // 2) 도서 상세 (/book/detail/{id})
     BookInfo getBookDetail(Long id);
 

@@ -33,6 +33,9 @@ public class BookInfo {
     private String author;
 
     @Column
+    private String category;
+
+    @Column
     private String coverImageUrl;
 
     @Column(nullable = false)

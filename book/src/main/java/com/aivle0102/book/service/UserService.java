@@ -13,4 +13,7 @@ public interface UserService {
 
     // PASSWORD 찾기
     String resetPassword(String email, String name, String phone);
+
+    // PASSWORD 변경
+    void changePassword(Long userId, String currentPassword, String newPassword);
 }

@@ -79,6 +79,15 @@ export default function AppLayout({ children }) {
                             </Button>
                         )}
 
+                        {isLogin && (
+                            <Button
+                                color="inherit"
+                                onClick={() => requireLogin("/password/change")}
+                            >
+                                비밀번호 변경
+                            </Button>
+                        )}
+
                         <Button
                             color="inherit"
                             onClick={() => requireLogin("/userpage/view")}

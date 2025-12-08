@@ -88,7 +88,7 @@ export default function SignupPage() {
                     <label style={styles.label}>비밀번호</label>
                     <input
                         type="password"
-                        placeholder="8자 이상, 영문/숫자 포함"
+                        placeholder="8자 이상, 영문/숫자/특수문자 포함"
                         style={styles.input}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -110,7 +110,7 @@ export default function SignupPage() {
                     <label style={styles.label}>전화번호</label>
                     <input
                         type="text"
-                        placeholder="'-' 없이 숫자만 입력"
+                        placeholder="예: 01012345678"
                         style={styles.input}
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
@@ -139,12 +139,11 @@ export default function SignupPage() {
 const styles = {
     page: {
         width: "100%",
-        backgroundColor: "#f0f0f0",       // 회색 박스
+        minHeight: "100vh",
+        backgroundColor: "#f0f0f0",
         display: "flex",
         justifyContent: "center",
-        alignItems: "flex-start",         // ★ 위쪽 정렬
-        paddingTop: "40px",               // ★ 회색 박스 세로 줄이고 카드 올리기
-        overflow: "hidden",               // 스크롤 제거
+        alignItems: "center",
     },
 
     card: {
@@ -186,8 +185,9 @@ const styles = {
     },
 
     input: {
-        width: "400px",
-        padding: "10px",               // 기존 12px → 10px
+        width: "100%",
+        boxSizing: "border-box",
+        padding: "10px",
         fontSize: "13px",
         borderRadius: "6px",
         border: "1px solid #ccc",

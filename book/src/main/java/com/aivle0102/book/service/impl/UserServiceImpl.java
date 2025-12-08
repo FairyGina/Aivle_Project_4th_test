@@ -61,4 +61,26 @@ public class UserServiceImpl implements UserService {
 
         return tempPassword;
     }
+
+    @Override
+    @Transactional
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+
+        UserInfo user = userInfoRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        // 지금은 평문 비밀번호라서 단순 비교
+        if (!user.getPassword().equals(currentPassword)) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        // 새 비밀번호 == 기존 비밀번호 인지 체크
+        if (currentPassword.equals(newPassword)) {
+            throw new IllegalArgumentException("새 비밀번호는 이전 비밀번호와 달라야 합니다.");
+        }
+
+        // 새 비밀번호로 변경 (실서비스면 암호화 필수)
+        user.setPassword(newPassword);
+        userInfoRepository.save(user);
+    }
 }

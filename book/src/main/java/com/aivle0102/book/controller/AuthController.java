@@ -1,6 +1,7 @@
 package com.aivle0102.book.controller;
 
 import com.aivle0102.book.domain.UserInfo;
+import com.aivle0102.book.dto.ChangePasswordRequest;
 import com.aivle0102.book.service.LoginService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -140,6 +141,48 @@ public class AuthController {
             body.put("status", "error");
             body.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+
+        } catch (Exception e) {
+            body.put("status", "error");
+            body.put("message", "서버 내부 오류가 발생했습니다.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
+        }
+    }
+
+    // PASSWORD 변경
+    @PostMapping("/change-pw")
+    public ResponseEntity<?> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            BindingResult bindingResult
+    ) {
+        // 1) DTO 검증 실패 시
+        if (bindingResult.hasErrors()) {
+            String message = bindingResult.getFieldErrors().get(0).getDefaultMessage();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                            "status", "error",
+                            "message", message
+                    ));
+        }
+
+        Map<String, Object> body = new HashMap<>();
+
+        try {
+            // 2) 실제 비밀번호 변경 처리
+            userService.changePassword(
+                    request.getUserId(),
+                    request.getCurrentPassword(),
+                    request.getNewPassword()
+            );
+
+            body.put("status", "success");
+            body.put("message", "비밀번호가 변경되었습니다. 다시 로그인 해 주세요.");
+            return ResponseEntity.ok(body);
+
+        } catch (IllegalArgumentException e) {
+            body.put("status", "error");
+            body.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
 
         } catch (Exception e) {
             body.put("status", "error");

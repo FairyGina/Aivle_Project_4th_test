@@ -33,6 +33,13 @@ public class BookInfoServiceImpl implements BookInfoService {
         return bookInfoRepository.findAll();
     }
 
+    // 1-2) userId별 도서 목록 조회
+    @Transactional(readOnly = true)
+    @Override
+    public List<BookInfo> getBookListByUser(Long userId) {
+        return bookInfoRepository.findByUser_UserId(userId);
+    }
+
     // 2) 도서 상세 조회
     @Transactional(readOnly = true)
     @Override

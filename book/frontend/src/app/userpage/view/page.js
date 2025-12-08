@@ -42,13 +42,19 @@ export default function MyPageView() {
         const fetchWorks = async () => {
             setLoading(true);
             try {
-                const response = await fetch("http://localhost:8080/book/list", {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        // 'Authorization': FAKE_ACCESS_TOKEN,
-                    },
-                });
+                // localStorage 에서 userId 꺼내기
+                const parsed = JSON.parse(user);
+                const userId = parsed.userId;
+
+                const response = await fetch(
+                    `http://localhost:8080/book/list/my?userId=${userId}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
 
                 if (!response.ok) {
                     const errorBody = await response.text();
@@ -63,12 +69,10 @@ export default function MyPageView() {
                 }
 
                 const result = await response.json();
-                console.log("📘 /book/list 응답:", result);
+                console.log("📘 /book/list/my 응답:", result);
 
-                // 1) ApiResponse 형태: { status, data, message } 인지 확인
                 let list = null;
                 if (Array.isArray(result)) {
-                    // 혹시 배열로 바로 오는 경우
                     list = result;
                 } else if (result && Array.isArray(result.data)) {
                     list = result.data;
@@ -76,12 +80,9 @@ export default function MyPageView() {
                     throw new Error("리스트 응답 형식이 올바르지 않습니다.");
                 }
 
-                // 2) null / undefined 항목 제거
                 const cleaned = list.filter((item) => item != null);
 
-                // 3) 여기서부터는 item 이 무조건 객체라고 가정
                 const fetchedWorks = cleaned.map((item) => ({
-                    // 백엔드에서 bookId 라고 오면 bookId, 혹시 id 라고 오면 id 둘 다 시도
                     id: item.bookId ?? item.id,
                     title: item.title ?? "제목 없음",
                     author: item.author || "알 수 없음",
@@ -101,7 +102,7 @@ export default function MyPageView() {
                     alert("작품 목록을 불러오지 못했습니다.");
                     alertShown.current = true;
                 }
-                setWorks([]);   // ✅ 더 이상 목업 안 씀
+                setWorks([]);
             } finally {
                 setLoading(false);
             }

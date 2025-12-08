@@ -27,6 +27,15 @@ public class BookInfoController {
         return ResponseEntity.ok(ApiResponse.success(list));
     }
 
+    // 1-2. 내 도서 목록 (userId 기준)
+    @GetMapping("/list/my")
+    public ResponseEntity<ApiResponse<List<BookInfo>>> getMyBookList(
+            @RequestParam Long userId
+    ) {
+        List<BookInfo> list = bookInfoService.getBookListByUser(userId);
+        return ResponseEntity.ok(ApiResponse.success(list));
+    }
+
     // 2. 도서 상세
     @GetMapping("/detail/{id}")
     public ResponseEntity<ApiResponse<BookInfo>> getBookDetail(@PathVariable Long id) {

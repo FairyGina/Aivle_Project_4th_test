@@ -23,17 +23,33 @@ export default function CreateWork() {
         setModel(e.target.value);
     };
 
-    // ⭐ 실제로 등록하는 함수
+    // 실제로 등록하는 함수
     const handleSubmit = async () => {
+        if (!form.title || !form.author ||!form.content) {
+            alert("제목과 저자명, 내용을 입력해야 합니다.");
+            return;
+        }
+
+        let coverUrl = imageUrl;
+        if (!imageUrl) {
+            const proceed = confirm(
+                "표지 이미지가 없습니다. 이미지 없이 작품을 등록할까요?"
+            );
+            if (!proceed) return;  // 취소하면 중단
+            coverUrl = null; // 이미지 없이 등록
+        }
+
         try {
             const response = await fetch("http://localhost:8080/book/insert", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
 
-                // 백엔드 요구 body는 title + content 뿐임
+                // 백엔드 요구 body: title, content, author
                 body: JSON.stringify({
                     title: form.title,
                     content: form.content,
+                    author: form.author,
+                    coverImageUrl: coverUrl
                 }),
             });
 
@@ -107,7 +123,7 @@ export default function CreateWork() {
                     sx={{ mb: 3 }}
                 />
 
-                {/* ⭐ 이 버튼이 실제 백엔드로 제출 */}
+                {/* 이 버튼이 실제 백엔드로 제출 */}
                 <Button
                     variant="contained"
                     size="large"

@@ -86,7 +86,9 @@ export default function LoginPage() {
                         <Link href="/signup">
                             <button style={styles.subButton}>✔ 회원가입</button>
                         </Link>
-                        <button style={styles.subButton}>✔ ID/PW 찾기</button>
+                        <button style={styles.subButton} onClick={() => window.location.href="/find/id"}>
+                            ✔ ID/PW 찾기
+                        </button>
                     </div>
                 </div>
 

@@ -31,6 +31,9 @@ dependencies {
 	///DTO @Valid 쓰려고 추가 (유효성 검사)
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+	//도서 크롤링
+	implementation 'org.jsoup:jsoup:1.17.1'
+
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.h2database:h2'

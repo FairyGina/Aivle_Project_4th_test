@@ -133,15 +133,15 @@ export default function BookDetailPage() {
           </Typography>
         </Box>
 
-        {/* 수정/삭제 버튼 */}
-        <Stack direction="row" spacing={1}>
-          <Button variant="contained" color="inherit" sx={{ backgroundColor: '#b0a9a9', color: '#fff' }}>
-            수정
-          </Button>
-          <Button variant="contained" color="inherit" sx={{ backgroundColor: '#b0a9a9', color: '#fff' }}>
-            삭제
-          </Button>
-        </Stack>
+        {/*/!* 수정/삭제 버튼 *!/*/}
+        {/*<Stack direction="row" spacing={1}>*/}
+        {/*  <Button variant="contained" color="inherit" sx={{ backgroundColor: '#b0a9a9', color: '#fff' }}>*/}
+        {/*    수정*/}
+        {/*  </Button>*/}
+        {/*  <Button variant="contained" color="inherit" sx={{ backgroundColor: '#b0a9a9', color: '#fff' }}>*/}
+        {/*    삭제*/}
+        {/*  </Button>*/}
+        {/*</Stack>*/}
       </Box>
 
             <Divider sx={{ mb: 4 }} />

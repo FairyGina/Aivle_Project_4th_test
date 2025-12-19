@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="e31bcf78-0dcc-4cb9-ae6f-a1a78c686b84" name="변경" comment="help">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/book/frontend/next.config.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/book/frontend/next.config.mjs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -71,12 +71,12 @@
       </RecentBranches>
     </option>
   </component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/KonoPark/Aivle_School_4th_Project.git&quot;,
-    &quot;accountId&quot;: &quot;db282ae3-baf3-4119-861a-cc57010e61fc&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/FairyGina/Aivle_Project_4th_test",
+    "accountId": "bd7757f7-2f54-41f8-9fcf-fcbbc18e6d9d"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0
 }</component>
@@ -92,6 +92,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
     "git-widget-placeholder": "main",
+    "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
     "node.js.detected.package.eslint": "true",
@@ -110,8 +111,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.28238.7" />
-        <option value="bundled-js-predefined-d6986cc7102b-a71380e98a7c-JavaScript-IU-252.28238.7" />
+        <option value="bundled-js-predefined-d6986cc7102b-a71380e98a7c-JavaScript-WS-252.28238.10" />
       </set>
     </attachedChunks>
   </component>
@@ -133,6 +133,7 @@
       <workItem from="1765175272811" duration="2000" />
       <workItem from="1765175349118" duration="4833000" />
       <workItem from="1765241933631" duration="1423000" />
+      <workItem from="1766108442838" duration="2235000" />
     </task>
     <task id="LOCAL-00002" summary="help">
       <option name="closed" value="true" />

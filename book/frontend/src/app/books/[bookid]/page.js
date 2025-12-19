@@ -41,7 +41,7 @@ export default function BookDetailPage() {
             setLoading(true);
             try {
                 const res = await fetch(
-                    `http://localhost:8080/book/detail/${bookid}`
+                    `/api/book/detail/${bookid}`
                 );
 
                 if (!res.ok) {

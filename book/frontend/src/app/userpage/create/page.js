@@ -123,7 +123,7 @@ export default function CreateWork() {
             coverImageUrl: imageUrl, // URL만 보내면 됨!
         };
 
-        const response = await fetch(`http://localhost:8080/book/insertByUrl?userId=${userData.userId}`, {
+        const response = await fetch(`/api/book/insertByUrl?userId=${userData.userId}`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(bookData),
